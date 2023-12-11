@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/sidebar.css">
+    <title>Metronome</title>
+
+    <style>
+        #main-content {
+            height: 1000px;
+            padding: 10px;
+            font-family: 'Chivo', sans-serif;
+        }
+
+        #header-text {
+            flex-grow: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #logo {
+            border-bottom: 1px solid #000;
+            width: 250px;
+            border-right: 1px solid;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: 'Chivo', sans-serif;
+        }
+
+        .button-primary {
+            margin-top: 20px;
+            border: 1px solid #000000;
+            width: 200px;
+            border-radius: 5px;
+            background-color: #91e4fb;
+            box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .button-primary:hover {
+            background-color: #22cfff;
+        }
+
+        .button-secondary {
+            border: 1px solid #000000;
+            width: 200px;
+            border-radius: 5px;
+            background-color: #eee;
+            box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .button-secondary:hover {
+            background-color: #bbb;
+        }
+
+        .note {
+            font-size: smaller;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        select,
+        .text-input {
+            width: 200px;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            border-radius: 4px;
+        }
+
+        .date-input input {
+            width: 150px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button-container button {
+            flex: 1;
+            padding: 10px;
+            font-family: 'Chivo', sans-serif;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <div id="logo">
+                <img src="https://i.imgur.com/WPgv40L.jpg" alt="Logo">
+                <p>The Rhythm Game Score Tracker</p>
+            </div>
+            <a href="index.html" id="score-viewer-link">
+                <button class="beveled-button">Score Viewer</button>
+            </a>
+            <a href="upload-score.html" id="upload-score-link">
+                <button class="beveled-button">Upload Score</button>
+            </a>
+            <a href="profile.html" id="profile-link">
+                <button class="beveled-button">Player Profile</button>
+            </a>
+        </div>
+        <div id="main-content">
+            <h2>Upload Score</h2>
+            <form id="score-form">
+                <div class="form-group">
+                    <label for="game">Game</label>
+                    <select id="game" name="game">
+                        <option value="">Select a game...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Song Info</label>
+                    <input type="text" class="text-input" id="songName" name="songName" placeholder="Song Name">
+                    <select id="difficulty" name="difficulty">
+                        <option value="">Difficulty</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Score Info</label>
+                    <input type="text" class="text-input" id="score" name="score" placeholder="Score">
+                    <select id="clearStatus" name="clearStatus">
+                        <option value="">Clear Status</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" class="text-input" id="accuracy" name="accuracy" placeholder="Accuracy">
+                    <input type="text" class="text-input" id="maxChain" name="maxChain" placeholder="Max Chain">
+                </div>
+
+                <div class="form-group date-input">
+                    <label for="dateAchieved">Date Achieved</label>
+                    <input type="date" id="dateAchieved" name="dateAchieved">
+                </div>
+
+                <button type="submit" class="button-primary">Upload Score</button>
+                <button type="button" class="button-secondary">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        let gamesData = [];
+
+        document.getElementById('game').addEventListener('change', function () {
+            let selectedGame = gamesData.find(game => game.gameID == this.value);
+            if (selectedGame) {
+                populateDropdown('#difficulty', selectedGame.difficultyLevels);
+                populateDropdown('#clearStatus', selectedGame.clearStates);
+            }
+        });
+
+        // Function to populate a drop-down menu with options (GUI update based on DB)
+        function populateDropdown(selector, options) {
+            const select = document.querySelector(selector);
+            select.innerHTML = ''; // Clear existing options
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                select.appendChild(opt);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/fetch-games')
+                .then(response => response.json())
+                .then(games => {
+                    gamesData = games; // Store the games data for later
+                    const gameSelect = document.getElementById('game');
+                    games.forEach(game => {
+                        let option = new Option(game.gameName, game.gameID);
+                        gameSelect.add(option);
+                    });
+                })
+                .catch(error => console.error('Error loading games:', error));
+        });
+
+        document.getElementById('score-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Construct the score data object from form fields
+            const scoreData = {
+                gameID: document.getElementById('game').value,
+                songName: document.getElementById('songName').value,
+                clearState: document.getElementById('clearStatus').value,
+                scoreTotal: document.getElementById('score').value,
+                difficultyLevel: document.getElementById('difficulty').value,
+                accuracyTotal: document.getElementById('accuracy').value,
+                maxChain: document.getElementById('maxChain').value,
+                datePosted: document.getElementById('dateAchieved').value
+            };
+
+            // Send the data to the server using fetch
+            fetch('/submit-score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(scoreData),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error submitting score: ' + error.message);
+                });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/sidebar.css">
+    <title>Metronome</title>
+
+    <style>
+        #main-content {
+            height: 1000px;
+            padding: 10px;
+            font-family: 'Chivo', sans-serif;
+        }
+
+        #header-text {
+            flex-grow: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #logo {
+            border-bottom: 1px solid #000;
+            width: 250px;
+            border-right: 1px solid;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: 'Chivo', sans-serif;
+        }
+
+        .button-primary {
+            margin-top: 20px;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            background-color: #91e4fb;
+            box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .button-primary:hover {
+            background-color: #22cfff;
+        }
+
+        .button-secondary {
+            border: 1px solid #000000;
+            border-radius: 5px;
+            background-color: #eee;
+            box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .button-secondary:hover {
+            background-color: #bbb;
+        }
+
+        .button-tertiary {
+            border: 1px solid #000000;
+            border-radius: 5px;
+            margin-left: 5px;
+            background-color: #ec8d8d;
+            box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .button-tertiary:hover {
+            background-color: #ec4a4a;
+        }
+
+        .note {
+            font-size: smaller;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <div id="logo">
+                <img src="https://i.imgur.com/WPgv40L.jpg" alt="Logo">
+                <p>The Rhythm Game Score Tracker</p>
+            </div>
+            <a href="index.html" id="score-viewer-link">
+                <button class="beveled-button">Score Viewer</button>
+            </a>
+            <a href="upload-score.html" id="upload-score-link">
+                <button class="beveled-button">Upload Score</button>
+            </a>
+            <a href="profile.html" id="profile-link">
+                <button class="beveled-button">Player Profile</button>
+            </a>
+        </div>
+        <div id="main-content">
+            <h2>Edit Account</h2>
+            <form id="form">
+
+                <input type="text" id="userid" name="userid" placeholder="New Username">
+                <input type="password" id="password" name="password" placeholder="New Password">
+                <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm New Password">
+
+                <button type="submit" class="button-primary">Confirm Changes</button>
+            </form>
+            <a href="profile.html" id="profile-link2">
+                <button type="button" class="button-secondary">Cancel</button>
+            </a>
+            <button type="button" class="button-tertiary">Delete Account</button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+    
+                const userData = {
+                    newUsername: document.getElementById('userid').value,
+                    newPassword: document.getElementById('password').value,
+                    confirmPassword: document.getElementById('confirm-password').value
+                };
+    
+                // Basic validation
+                if (userData.newPassword !== userData.confirmPassword) {
+                    alert('Passwords do not match!');
+                    return;
+                }
+    
+                fetch('/update-account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    // Redirect to profile or other actions
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing code ...
+                
+            const deleteButton = document.querySelector('.button-tertiary');
+            deleteButton.addEventListener('click', function(event) {
+                const confirmation = confirm('Are you sure you want to delete your account? This cannot be undone.');
+            
+                if (confirmation) {
+                    fetch('/delete-account', {
+                        method: 'POST',
+                        // Add any necessary headers
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                        // Redirect to home page or perform other actions
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

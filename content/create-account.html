@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/sidebar.css">
+    <title>Metronome</title>
+
+    <style>
+        #main-content {
+            height: 1000px;
+            /* Adjust as needed */
+            padding: 10px;
+            font-family: 'Chivo', sans-serif;
+        }
+
+        #header-text {
+            flex-grow: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #logo {
+            border-bottom: 1px solid #000;
+            /* Adds a solid black border at the bottom */
+            width: 250px;
+            border-right: 1px solid;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            border-radius: 4px;
+        }
+
+        #userid {
+            margin-bottom: 2px;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: 'Chivo', sans-serif;
+        }
+
+        .button-primary {
+            margin-top: 20px;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            /* Slightly rounded corners */
+            background-color: #91e4fb;
+            box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow for depth */
+            cursor: pointer;
+            /* Changes cursor to indicate button */
+        }
+
+        .button-primary:hover {
+            background-color: #22cfff;
+        }
+
+        .button-secondary {
+            border: 1px solid #000000;
+            border-radius: 5px;
+            /* Slightly rounded corners */
+            background-color: #eee;
+            box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow for depth */
+            cursor: pointer;
+            /* Changes cursor to indicate button */
+        }
+
+        .button-secondary:hover {
+            background-color: #bbb;
+        }
+
+        .note {
+            font-size: smaller;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <div id="logo">
+                <img src="https://i.imgur.com/WPgv40L.jpg" alt="Logo">
+                <p>The Rhythm Game Score Tracker</p>
+            </div>
+            <a href="index.html" id="score-viewer-link">
+                <button class="beveled-button">Score Viewer</button>
+            </a>
+            <a href="upload-score.html" id="upload-score-link" class="hidden">
+                <button class="beveled-button">Upload Score</button>
+            </a>
+            <a href="profile.html" id="profile-link" class="hidden">
+                <button class="beveled-button">Player Profile</button>
+            </a>
+            <a href="login.html" id="login-link">
+                <button class="beveled-button">Login</button>
+            </a>
+            <a href="create-account.html" id="create-account-link">
+                <button class="beveled-button">Create Account</button>
+            </a>
+        </div>
+        <div id="main-content">
+            <h2>Create Account</h2>
+            <form id="create-account-form">
+                <input type="text" id="userid" name="userid" placeholder="User ID (cannot be changed later)">
+                <span class="note">User IDs must be unique among Metronome users.</span>
+
+                <input type="text" id="username" name="username" placeholder="Display Username">
+                <input type="password" id="password" name="password" placeholder="Password">
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password">
+                <button type="submit" class="button-primary">Create Account</button>
+                <button type="button" class="button-secondary">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('create-account-form').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                // Gather form data
+                const userData = {
+                    userID: document.getElementById('userid').value,
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value,
+
+                };
+
+                // Send the data to the server
+                try {
+                    const response = await fetch('/create-account', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(userData),
+                    });
+                    const data = await response.json();
+                    console.log(data);
+                    window.location.href = "index.html";
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

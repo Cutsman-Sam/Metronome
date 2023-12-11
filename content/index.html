@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/sidebar.css">
+    <title>Metronome</title>
+
+    <style>
+        #main-content {
+            height: 1000px;
+            padding: 10px
+        }
+
+        #header-text {
+            flex: 1;
+            flex-grow: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: start;
+            margin-bottom: 10px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: start;
+        }
+
+        #stats-section {
+            border-left: 1px solid #000000;
+            padding-left: 20px;
+            margin-right:20px;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 200px;
+            font-family: 'Chivo', sans-serif;
+            font-size: 16px;
+        }
+
+        .header-row input[type="text"],
+        .header-row select,
+        .header-row input[type="date"] {
+            margin-right: 10px;
+            padding: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-family: 'Chivo', sans-serif;
+        }
+
+        th,
+        td {
+            border: 1px solid #000000;
+            padding: 8px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        th {
+            background-color: #c1e8f4;
+        }
+
+        tr {
+            background-color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #ededed;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="header">
+        <div id="logo">
+            <img src="https://i.imgur.com/WPgv40L.jpg" alt="Logo">
+            <p>The Rhythm Game Score Tracker</p>
+        </div>
+        <div id="header-text">
+            <div class="header-row">
+                <input type="text" name="user-filter" placeholder="Any Player">
+                <select name="game-filter">
+                    <option value="">Any Game</option>
+                    <option value="Groove Coaster">Groove Coaster</option>
+                    <option value="Sound Voltex">Sound Voltex</option>
+                    <option value="Osu!">Osu!</option>
+                </select>
+            </div>
+            <div class="header-row">
+                <input type="text" name="song-filter" placeholder="Any Song">
+                <input type="date" name="date-filter">
+            </div>
+            <div class="header-row">
+                <button id="apply-filters" class="beveled-button">Apply Filters</button>
+            </div>
+        </div>
+        <div id="stats-section" class="hidden">
+            <h3>Statistics</h3>
+            <ul id="stats-list">
+            </ul>
+        </div>
+    </div>
+    <div id="container">
+        <div id="sidebar">
+            <a href="index.html" id="score-viewer-link" class="hidden">
+                <button class="beveled-button">Score Viewer</button>
+            </a>
+            <a href="upload-score.html" id="upload-score-link" class="hidden">
+                <button class="beveled-button">Upload Score</button>
+            </a>
+            <a href="profile.html" id="profile-link" class="hidden">
+                <button class="beveled-button">Player Profile</button>
+            </a>
+            <a href="login.html" id="login-link" class="hidden">
+                <button class="beveled-button">Login</button>
+            </a>
+            <a href="create-account.html" id="create-account-link" class="hidden">
+                <button class="beveled-button">Create Account</button>
+            </a>
+        </div>
+        <div id="main-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Game</th>
+                        <th>Song</th>
+                        <th>Difficulty</th>
+                        <th>Clear</th>
+                        <th>Score</th>
+                        <th>Accuracy</th>
+                        <th>Max Chain</th>
+                        <th>Date Achieved</th>
+                    </tr>
+                </thead>
+                <tbody id="score-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <script>
+        document.getElementById('apply-filters').addEventListener('click', function () {
+            const player = document.querySelector('[name="user-filter"]').value;
+            const game = document.querySelector('[name="game-filter"]').value;
+            const song = document.querySelector('[name="song-filter"]').value;
+            const date = document.querySelector('[name="date-filter"]').value;
+
+            fetchScoresWithFilters({ player, game, song, date });
+        });
+
+        async function fetchScoresWithFilters(filters) {
+            const queryString = new URLSearchParams(filters).toString();
+            await fetch(`/fetch-scores?${queryString}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(scores => {
+                    populateScoreTable(scores);
+                })
+                .catch(error => console.error('Error loading scores:', error));
+        }
+
+        function populateScoreTable(scores) {
+            const tableBody = document.getElementById('score-table-body');
+            tableBody.innerHTML = ''; // Clear existing entries
+
+
+            scores.forEach(score => {
+                const row = document.createElement('tr');
+
+                // Create and append each cell to the row
+                row.innerHTML = `
+                  <td>${score.userInfo.username}</td>
+                  <td>${score.gameInfo.gameName}</td>
+                  <td>${score.songName}</td>
+                  <td>${score.difficultyLevel}</td>
+                  <td>${score.clearState}</td>
+                  <td>${score.scoreTotal}</td>
+                  <td>${score.accuracyTotal}</td>
+                  <td>${score.maxChain}</td>
+                  <td>${new Date(score.datePosted).toLocaleDateString()}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/fetch-scores')
+                .then(response => response.json())
+                .then(scores => {
+                    populateScoreTable(scores);
+                })
+                .catch(error => console.error('Error loading scores:', error));
+
+            document.getElementById('apply-filters').addEventListener('click', function () {
+                const player = document.querySelector('[name="user-filter"]').value;
+                const game = document.querySelector('[name="game-filter"]').value;
+                const song = document.querySelector('[name="song-filter"]').value;
+                const date = document.querySelector('[name="date-filter"]').value;
+
+                fetchScoresWithFilters({ player, game, song, date });
+            });
+        });
+
+
+        function checkLogin(req, res) {
+            fetch('/check-login')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isLoggedIn) {
+                        document.getElementById('score-viewer-link').classList.remove('hidden');
+                        document.getElementById('upload-score-link').classList.remove('hidden');
+                        document.getElementById('profile-link').classList.remove('hidden');
+                    } else {
+                        document.getElementById('score-viewer-link').classList.remove('hidden');
+                        document.getElementById('login-link').classList.remove('hidden');
+                        document.getElementById('create-account-link').classList.remove('hidden');
+                    }
+                });
+        }
+
+        document.getElementById('apply-filters').addEventListener('click', async function () {
+            const player = document.querySelector('[name="user-filter"]').value;
+            const game = document.querySelector('[name="game-filter"]').value;
+            const song = document.querySelector('[name="song-filter"]').value;
+            const date = document.querySelector('[name="date-filter"]').value;
+
+            await fetchScoresWithFilters({ player, game, song, date });
+
+            // Show/Hide statistics based on game selection
+            const statsSection = document.getElementById('stats-section');
+            if (game === 'Groove Coaster' || game === 'Sound Voltex' || game === 'Osu!') {
+                statsSection.classList.remove('hidden');
+                updateStatsAverages();
+            } else {
+                statsSection.classList.add('hidden');
+            }
+        });
+
+        // Function to calculate averages
+        function calculateAverages(rows) {
+            let totalScore = 0;
+            let totalAccuracy = 0;
+            let totalMaxChain = 0;
+            let rowCount = 0;
+
+            // Iterate through table rows and calculate totals
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td'); // Assuming the data is in <td> elements
+                if (cells.length >= 7) { // Ensure there are enough cells
+                    const score = parseFloat(cells[5].textContent);
+                    const accuracy = parseFloat(cells[6].textContent);
+                    const maxChain = parseInt(cells[7].textContent);
+
+                    if (!isNaN(score) && !isNaN(accuracy) && !isNaN(maxChain)) {
+                        totalScore += score;
+                        totalAccuracy += accuracy;
+                        totalMaxChain += maxChain;
+                        rowCount++;
+                    }
+                }
+            });
+
+            // Calculate averages
+            const averageScore = parseInt(totalScore / rowCount)
+            const averageAccuracy = totalAccuracy / rowCount
+            const averageMaxChain = parseInt(totalMaxChain / rowCount)
+
+            return {
+                averageScore,
+                averageAccuracy,
+                averageMaxChain
+            };
+        }
+
+        // Function to update the stats section with averages
+        function updateStatsAverages() {
+            const tableRows = document.querySelectorAll('#score-table-body tr');
+            const statsList = document.getElementById('stats-list');
+
+            const averages = calculateAverages(tableRows);
+
+            // Update the stats section with the averages
+            statsList.innerHTML = `
+                <li>Average Score: ${averages.averageScore}</li>
+                <li>Average Accuracy: ${averages.averageAccuracy.toFixed(2)}%</li>
+                <li>Average Max Chain: ${averages.averageMaxChain}</li>`;
+        }
+
+        // Run the login check when the page loads
+        window.onload = checkLogin;
+    </script>
+</body>
+
+</html>
